@@ -1,0 +1,47 @@
+---
+title: "Developing Data Products Assignment 2"
+author: "Emily Payne"
+date: "10/20/2018"
+output: ioslides_presentation
+---
+
+## Background
+
+- This is the second assignment of the Developing Data Products Cousera. The purpose of this assignment is to make web page presentation that includes a plot created with the `plotly` package. 
+
+- I decided to plot the number of vegetarian restaurants across the USA. I found the vegetarian restaurant data on the [data.world](https://data.world/datafiniti/vegetarian-vegan-restaurants) site. 
+
+- I used the choropleth plot type to show the number of vegetarian restaurants in each state. This is indicated by the different colors of each state- the darker the blue, the more restaurants.
+
+- You can also hover over each state to find out exactly how many vegetarian restaurants it has.
+```{r, echo = FALSE, message = FALSE}
+library(plotly)
+library(dplyr)
+library(tidyr)
+vegetarianData <- read.csv("vegetarianrestaurants.csv", na.strings=c("", "NA"))
+df <- data.frame(province = vegetarianData$province)
+vegData <- aggregate(x = df, by = list(state = df$province), FUN = length)
+names(vegData) <- c("state", "count")
+vegData <- vegData[-c(4),]
+vegData$state <- as.character(vegData$state)
+vegData$hover <- with(vegData, paste(state, '<br>', "Number of Restaurants:", count))
+borders <- list(color = toRGB("grey"), width = 0.5)
+map_options <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white')
+)
+```
+
+
+## Plot of Vegetarian Restaurants
+
+
+```{r, echo = FALSE, message = FALSE}
+plot_ly(z = ~vegData$count, text = ~vegData$hover, locations = ~vegData$state, 
+        type = 'choropleth', locationmode = 'USA-states', 
+        color = vegData$count, colors = 'Blues', marker = list(line = borders)) %>%
+  layout(title = 'Vegetarian Restaurants Across the USA', geo = map_options)
+```
+
